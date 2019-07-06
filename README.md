@@ -1,6 +1,6 @@
 # gpropz
 
-gpropz allows you to create GObject properties with far less boilerplate than by default.
+gpropz allows you to create GObject properties with less boilerplate.
 
 ## Highlights
 
