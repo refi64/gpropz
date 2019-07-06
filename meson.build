@@ -4,16 +4,20 @@
 
 project('gpropz', 'c', version: '0.1.0')
 
+gnome = import('gnome')
+
 conf_data = configuration_data()
 conf_data.set_quoted('GPROPZ_VERSION', meson.project_version())
 configure_file(output : 'gpropz-config.h',
                configuration : conf_data)
 conf_inc = include_directories('.')
 
-dependencies = [
-    dependency('glib-2.0'),
-    dependency('gobject-2.0'),
-]
+glib_dep = dependency('glib-2.0')
+gobject_dep = dependency('gobject-2.0')
 
 subdir('src')
 subdir('demo')
+
+if get_option('gtk-doc')
+    subdir('docs')
+endif

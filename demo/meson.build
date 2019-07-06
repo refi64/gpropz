@@ -4,4 +4,4 @@
 
 executable('demo',
            ['demo-simple.c', 'demo-derivable.c', 'main.c'],
-           dependencies : dependencies + [gpropz_dep])
+           dependencies : [glib_dep, gobject_dep, gpropz_dep])

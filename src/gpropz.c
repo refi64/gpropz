@@ -93,6 +93,12 @@ _gpropz_internal_set_with_filter (GObject      *object,
     memcpy (prop, source, size);
 }
 
+/**
+ * gpropz_auto_get_property:
+ *
+ * This function may be placed in #GObjectClass.get_property in order to use gpropz's automated
+ * getter.
+ */
 void
 gpropz_auto_get_property (GObject    *object,
                           guint       prop_id,
@@ -132,6 +138,12 @@ gpropz_auto_get_property (GObject    *object,
     g_warning ("Unexpected param pspec for %s", g_param_spec_get_name (pspec));
 }
 
+/**
+ * gpropz_auto_set_property:
+ *
+ * This function may be placed in #GObjectClass.get_property in order to use gpropz's automated
+ * setter.
+ */
 void
 gpropz_auto_set_property (GObject      *object,
                           guint         prop_id,
@@ -171,6 +183,13 @@ gpropz_auto_set_property (GObject      *object,
     g_warning ("Unexpected param pspec for %s", g_param_spec_get_name (pspec));
 }
 
+/**
+ * gpropz_class_init_property_functions:
+ * @object_class: The #GObjectClass to set properties on.
+ *
+ * Set's the @object_class's get_property and set_property attributes to
+ * gpropz_auto_get_property() and gpropz_auto_set_property(), respectively.
+ */
 void
 gpropz_class_init_property_functions (GObjectClass *object_class)
 {
@@ -178,9 +197,27 @@ gpropz_class_init_property_functions (GObjectClass *object_class)
   object_class->set_property = gpropz_auto_set_property;
 }
 
+/**
+ * gpropz_bind_property_full:
+ * @struct_offset: The offset into the object structure that this property should be bound to.
+ * @prop_id: The ID associated with this property.
+ * @pspec: The property's parameter spec.
+ * @filter: (nullable): An optional filter that will manage reads/writes.
+ *
+ *
+ * Binds the member located at @struct_offset within the object to the GObject property passed
+ * in @prop_id and @pspec. This means that gpropz_auto_set_property() and
+ * gpropz_auto_get_property() will automatically write to / read from this location in the
+ * object structure. @filter specifies a #GpropzValueFilter that will be applied to the property,
+ * meaning that any writes or reads will go through #GpropzValueFilter.set_filter and
+ * #GpropzValueFilter.get_filter, respectively, instead of being directly written to the object.
+ *
+ * In most cases, you want to use gpropz_bind_property() or gpropz_bind_property_private()
+ * instead, or the auto-install functions gpropz_install_property() and
+ * gpropz_install_property_private().
+ */
 void
-gpropz_bind_property_full (GObjectClass      *object_class,
-                           gsize              struct_offset,
+gpropz_bind_property_full (gsize              struct_offset,
                            guint              prop_id,
                            GParamSpec        *pspec,
                            GpropzValueFilter *filter)
@@ -192,6 +229,12 @@ gpropz_bind_property_full (GObjectClass      *object_class,
   g_param_spec_set_qdata_full (pspec, GPROPZ_INTERNAL_DATA, data, g_free);
 }
 
+/**
+ * gpropz_install_property_full:
+ *
+ * Shorthand for calling g_object_class_install_property() and gpropz_install_property_full()
+ * in succession.
+ */
 void
 gpropz_install_property_full (GObjectClass      *object_class,
                               gsize              struct_offset,
@@ -199,6 +242,6 @@ gpropz_install_property_full (GObjectClass      *object_class,
                               GParamSpec        *pspec,
                               GpropzValueFilter *filter)
 {
-  gpropz_bind_property_full (object_class, struct_offset, prop_id, pspec, filter);
   g_object_class_install_property (object_class, prop_id, pspec);
+  gpropz_bind_property_full (struct_offset, prop_id, pspec, filter);
 }

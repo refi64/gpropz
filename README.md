@@ -1,7 +1,6 @@
 # gpropz
 
-gpropz allows you to create GObject properties with far less boilerplate than by default. Here's
-an example:
+gpropz allows you to create GObject properties with far less boilerplate than by default.
 
 ## Highlights
 
@@ -10,6 +9,23 @@ an example:
 - Automatically "bind" the getter (and optionally setter) for a property to a variable on
   your instance / private instance.
 - Support for "filters", which allows you to transform / reject properties manually.
+
+## Links
+
+- [Website/documentation.](https://gpropz.refi64.com/)
+- [Source.](https://github.com/refi64/gpropz)
+
+## Embedding
+
+gpropz is designed to be statically linked into your project. It generally follows the typical
+style of a [Meson subproject](https://mesonbuild.com/Subprojects.html#a-simple-example). Example:
+
+```python
+gpropz_proj = subproject('gpropz')
+gpropz_dep = gpropz_proj.get_variable('gpropz_dep')
+
+# Use gpropz_dep in your project later on.
+```
 
 ## Examples
 
@@ -36,7 +52,7 @@ properties[PROP_NAME] =
 gpropz_install_property (object_class, MyObject, name, PROP_NAME, properties[PROP_NAME],
                          NULL);
 // The above line is shorthand for:
-gpropz_bind_property (object_class, MyObject, name, PROP_NAME, properties[PROP_NAME]);
+gpropz_bind_property (MyObject, name, PROP_NAME, properties[PROP_NAME]);
 g_object_class_install_property (object_class, PROP_NAME, properties[PROP_NAME]);
 
 // gpropz_bind_property creates a binding for a given property (PROP_NAME) and attaches it

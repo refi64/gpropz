@@ -5,6 +5,6 @@
 gpropz_inc = include_directories('.')
 gpropz_lib = static_library('gproz', 'gpropz.c',
                             include_directories : [conf_inc, gpropz_inc],
-                            dependencies : dependencies)
+                            dependencies : [glib_dep, gobject_dep])
 gpropz_dep = declare_dependency(link_with : gpropz_lib,
                                 include_directories : [conf_inc, gpropz_inc])

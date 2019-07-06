@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "target": "gpropz",
+    "public": "_build/docs/html",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
