@@ -27,6 +27,9 @@ gpropz_dep = gpropz_proj.get_variable('gpropz_dep')
 # Use gpropz_dep in your project later on.
 ```
 
+If you're not using Meson, then just compile gpropz.c, making sure glib-2.0 and gobject-2.0's
+compiler flags / link options are given.
+
 ## Examples
 
 See the `demo` directory for full examples.

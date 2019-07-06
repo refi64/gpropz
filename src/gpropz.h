@@ -8,7 +8,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include "gpropz-config.h"
+// Make sure this is updated in sync with the root directory's meson.build
+#define GPROPZ_VERSION "0.1.0"
 
 G_BEGIN_DECLS
 
