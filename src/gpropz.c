@@ -91,6 +91,8 @@ _gpropz_internal_set_with_filter (GObject      *object,
     data->filter->set_filter (object, prop, data->prop_id, source, pspec);
   else
     memcpy (prop, source, size);
+
+  g_object_notify_by_pspec (object, pspec);
 }
 
 /**
