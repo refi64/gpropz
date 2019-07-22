@@ -63,6 +63,29 @@ typedef gpointer GPROPZ_OBJECT_TYPE;
 typedef GType GPROPZ_GTYPE_TYPE;
 typedef GVariant * GPROPZ_VARIANT_TYPE;
 
+static void
+gpropz_obj_ref_filter_get (GObject      *object,
+                           gconstpointer prop,
+                           guint         prop_id,
+                           gpointer      target,
+                           GParamSpec   *pspec)
+{
+  *(gpointer *) target = g_object_ref ((gpointer) prop);
+}
+
+static void
+gpropz_obj_ref_filter_set (GObject      *object,
+                           gpointer      prop,
+                           guint         prop_id,
+                           gconstpointer source,
+                           GParamSpec   *pspec)
+{
+  *(gpointer *) prop = g_object_ref ((gpointer) source);
+}
+
+GpropzValueFilter gpropz_obj_ref_filter = { gpropz_obj_ref_filter_get,
+                                            gpropz_obj_ref_filter_set };
+
 void
 _gpropz_internal_get_with_filter (GObject    *object,
                                   GParamSpec *pspec,
