@@ -95,7 +95,7 @@ _gpropz_internal_get_with_filter (GObject    *object,
   GpropzInternalData *data = g_param_spec_get_qdata (pspec, GPROPZ_INTERNAL_DATA);
   gconstpointer prop = ((gconstpointer) object) + data->struct_offset;
 
-  if (data->filter)
+  if (data->filter && data->filter->get_filter)
     data->filter->get_filter (object, prop, data->prop_id, target, pspec);
   else
     memcpy (target, prop, size);
@@ -110,7 +110,7 @@ _gpropz_internal_set_with_filter (GObject      *object,
   GpropzInternalData *data = g_param_spec_get_qdata (pspec, GPROPZ_INTERNAL_DATA);
   gpointer prop = ((gpointer) object) + data->struct_offset;
 
-  if (data->filter)
+  if (data->filter && data->filter->set_filter)
     data->filter->set_filter (object, prop, data->prop_id, source, pspec);
   else
     memcpy (prop, source, size);
