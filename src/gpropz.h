@@ -45,15 +45,6 @@ typedef struct _GpropzValueFilter {
                       GParamSpec   *pspec);
 } GpropzValueFilter;
 
-/**
- * gpropz_obj_ref_filter:
- *
- * A default filter that calls g_object_ref() on the input for both get_filter and set_filter.
- * If you only want one of the two behaviors, use gpropz_obj_ref_filter.get_filter or
- * gpropz_obj_ref_filter.set_filter to build your own filter structure.
- */
-extern GpropzValueFilter gpropz_obj_ref_filter;
-
 void _gpropz_internal_get_with_filter (GObject    *object,
                                        GParamSpec *pspec,
                                        gpointer    target,
