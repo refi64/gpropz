@@ -6,6 +6,6 @@ pandoc = find_program('pandoc')
 
 readme_xml = custom_target('gen-readme',
     output : 'readme.xml',
-    input : ['pandoc.sh', '../../README.md'],
-    command : ['@INPUT0@', pandoc, '@INPUT1@', '@OUTPUT@'],
+    input : '../../README.md',
+    command : ['./pandoc.sh', pandoc, '@INPUT@', '@OUTPUT@'],
 )
