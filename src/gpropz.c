@@ -97,7 +97,7 @@ _gpropz_internal_set_with_filter (GObject      *object,
 
   if (G_IS_PARAM_SPEC_STRING (pspec) && nested_ptr_not_null (source))
     {
-      g_clear_pointer ((const gchar **)prop, g_free);
+      g_clear_pointer ((gchar **)prop, g_free);
 
       copy = g_strdup (*(const gchar **)source);
       source = &copy;
