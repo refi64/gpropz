@@ -19,9 +19,19 @@ typedef struct {
 G_DEFINE_TYPE_WITH_PRIVATE (DemoDerivable, demo_derivable, G_TYPE_OBJECT)
 
 static void
+demo_derivable_dispose (GObject *object)
+{
+  DemoDerivable *derivable = DEMO_DERIVABLE (object);
+  DemoDerivablePrivate *priv = demo_derivable_get_instance_private (derivable);
+  g_clear_object (&priv->simple);
+}
+
+static void
 demo_derivable_class_init (DemoDerivableClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  object_class->dispose = demo_derivable_dispose;
+
   gpropz_class_init_property_functions (object_class);
 
   properties[PROP_SIMPLE] =
