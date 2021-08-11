@@ -55,36 +55,13 @@ GPROPZ_BASIC_TYPE(FLOAT)
 GPROPZ_BASIC_TYPE(DOUBLE)
 typedef gint GPROPZ_ENUM_TYPE;
 typedef guint GPROPZ_FLAGS_TYPE;
-typedef gchar * GPROPZ_STRING_TYPE;
+typedef const gchar * GPROPZ_STRING_TYPE;
 typedef GParamSpec * GPROPZ_PARAM_TYPE;
 typedef gpointer GPROPZ_BOXED_TYPE;
 GPROPZ_BASIC_TYPE(POINTER)
 typedef gpointer GPROPZ_OBJECT_TYPE;
 typedef GType GPROPZ_GTYPE_TYPE;
 typedef GVariant * GPROPZ_VARIANT_TYPE;
-
-static void
-gpropz_obj_ref_filter_get (GObject      *object,
-                           gconstpointer prop,
-                           guint         prop_id,
-                           gpointer      target,
-                           GParamSpec   *pspec)
-{
-  *(gpointer *) target = g_object_ref ((gpointer) prop);
-}
-
-static void
-gpropz_obj_ref_filter_set (GObject      *object,
-                           gpointer      prop,
-                           guint         prop_id,
-                           gconstpointer source,
-                           GParamSpec   *pspec)
-{
-  *(gpointer *) prop = g_object_ref ((gpointer) source);
-}
-
-GpropzValueFilter gpropz_obj_ref_filter = { gpropz_obj_ref_filter_get,
-                                            gpropz_obj_ref_filter_set };
 
 void
 _gpropz_internal_get_with_filter (GObject    *object,
@@ -101,6 +78,12 @@ _gpropz_internal_get_with_filter (GObject    *object,
     memcpy (target, prop, size);
 }
 
+static gboolean
+nested_ptr_not_null (gconstpointer source)
+{ 
+  return *(gconstpointer *)source != NULL;
+}
+
 void
 _gpropz_internal_set_with_filter (GObject      *object,
                                   GParamSpec   *pspec,
@@ -109,6 +92,39 @@ _gpropz_internal_set_with_filter (GObject      *object,
 {
   GpropzInternalData *data = g_param_spec_get_qdata (pspec, GPROPZ_INTERNAL_DATA);
   gpointer prop = ((gpointer) object) + data->struct_offset;
+
+  gpointer copy = NULL;
+
+  if (G_IS_PARAM_SPEC_STRING (pspec) && nested_ptr_not_null (source))
+    {
+      g_clear_pointer ((const gchar **)prop, g_free);
+
+      copy = g_strdup (*(const gchar **)source);
+      source = &copy;
+    }
+  else if (G_IS_PARAM_SPEC_PARAM (pspec) && nested_ptr_not_null (source))
+    {
+      g_clear_pointer ((GParamSpec **)prop, g_param_spec_unref);
+      g_param_spec_ref_sink (*(GParamSpec **)source);
+    }
+  else if (G_IS_PARAM_SPEC_BOXED (pspec) && nested_ptr_not_null (source))
+    {
+      if (nested_ptr_not_null (prop))
+        g_boxed_free (pspec->value_type, *(gpointer *)prop);
+
+      copy = g_boxed_copy (pspec->value_type, *(gpointer *)source);
+      source = &copy;
+    }
+  else if (G_IS_PARAM_SPEC_OBJECT (pspec) && nested_ptr_not_null (source))
+    {
+      g_clear_object ((GObject **)prop);
+      g_object_ref_sink (*(GObject **)source);
+    }
+  else if (G_IS_PARAM_SPEC_VARIANT (pspec) && nested_ptr_not_null (source))
+    {
+      g_clear_pointer ((GVariant **)prop, g_variant_unref);
+      g_variant_ref_sink (*(GVariant **)source);
+    }
 
   if (data->filter && data->filter->set_filter)
     data->filter->set_filter (object, prop, data->prop_id, source, pspec);
@@ -175,35 +191,35 @@ gpropz_auto_set_property (GObject      *object,
                           const GValue *value,
                           GParamSpec   *pspec)
 {
-  #define GPROPZ_SET_PROPERTY_IF(TYPE, get_or_dup) \
+  #define GPROPZ_SET_PROPERTY_IF(TYPE) \
     if (G_IS_PARAM_SPEC_##TYPE (pspec)) \
       { \
-        GPROPZ_##TYPE##_TYPE pval = G_PASTE (g_value_##get_or_dup##_, \
+        GPROPZ_##TYPE##_TYPE pval = G_PASTE (g_value_get_, \
                                              GPROPZ_##TYPE##_VALUE) (value); \
         _gpropz_internal_set_with_filter (object, pspec, &pval, sizeof(pval)); \
       }
 
-  GPROPZ_SET_PROPERTY_IF (BOOLEAN, get)
-  else GPROPZ_SET_PROPERTY_IF (CHAR, get)
-  else GPROPZ_SET_PROPERTY_IF (UCHAR, get)
-  else GPROPZ_SET_PROPERTY_IF (INT, get)
-  else GPROPZ_SET_PROPERTY_IF (UINT, get)
-  else GPROPZ_SET_PROPERTY_IF (UNICHAR, get)
-  else GPROPZ_SET_PROPERTY_IF (LONG, get)
-  else GPROPZ_SET_PROPERTY_IF (ULONG, get)
-  else GPROPZ_SET_PROPERTY_IF (INT64, get)
-  else GPROPZ_SET_PROPERTY_IF (UINT64, get)
-  else GPROPZ_SET_PROPERTY_IF (FLOAT, get)
-  else GPROPZ_SET_PROPERTY_IF (DOUBLE, get)
-  else GPROPZ_SET_PROPERTY_IF (ENUM, get)
-  else GPROPZ_SET_PROPERTY_IF (FLAGS, get)
-  else GPROPZ_SET_PROPERTY_IF (STRING, dup)
-  else GPROPZ_SET_PROPERTY_IF (PARAM, dup)
-  else GPROPZ_SET_PROPERTY_IF (BOXED, dup)
-  else GPROPZ_SET_PROPERTY_IF (POINTER, get)
-  else GPROPZ_SET_PROPERTY_IF (OBJECT, dup)
-  else GPROPZ_SET_PROPERTY_IF (GTYPE, get)
-  else GPROPZ_SET_PROPERTY_IF (VARIANT, dup)
+  GPROPZ_SET_PROPERTY_IF (BOOLEAN)
+  else GPROPZ_SET_PROPERTY_IF (CHAR)
+  else GPROPZ_SET_PROPERTY_IF (UCHAR)
+  else GPROPZ_SET_PROPERTY_IF (INT)
+  else GPROPZ_SET_PROPERTY_IF (UINT)
+  else GPROPZ_SET_PROPERTY_IF (UNICHAR)
+  else GPROPZ_SET_PROPERTY_IF (LONG)
+  else GPROPZ_SET_PROPERTY_IF (ULONG)
+  else GPROPZ_SET_PROPERTY_IF (INT64)
+  else GPROPZ_SET_PROPERTY_IF (UINT64)
+  else GPROPZ_SET_PROPERTY_IF (FLOAT)
+  else GPROPZ_SET_PROPERTY_IF (DOUBLE)
+  else GPROPZ_SET_PROPERTY_IF (ENUM)
+  else GPROPZ_SET_PROPERTY_IF (FLAGS)
+  else GPROPZ_SET_PROPERTY_IF (STRING)
+  else GPROPZ_SET_PROPERTY_IF (PARAM)
+  else GPROPZ_SET_PROPERTY_IF (BOXED)
+  else GPROPZ_SET_PROPERTY_IF (POINTER)
+  else GPROPZ_SET_PROPERTY_IF (OBJECT)
+  else GPROPZ_SET_PROPERTY_IF (GTYPE)
+  else GPROPZ_SET_PROPERTY_IF (VARIANT)
   else
     g_warning ("Unexpected param pspec for %s", g_param_spec_get_name (pspec));
 }
