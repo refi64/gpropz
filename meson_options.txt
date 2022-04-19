@@ -1,1 +1,1 @@
-option('gtk-doc', type: 'boolean', description: 'Generate the reference documentation')
+option('gtk-doc', type: 'feature', description: 'Generate the reference documentation')

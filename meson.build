@@ -13,6 +13,8 @@ gobject_dep = dependency('gobject-2.0')
 subdir('src')
 subdir('demo')
 
-if get_option('gtk-doc')
+gtk_doc = get_option('gtk-doc')
+pandoc = find_program('pandoc', required : gtk_doc)
+if pandoc.found()
     subdir('docs')
 endif
